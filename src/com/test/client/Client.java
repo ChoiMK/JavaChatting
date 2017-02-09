@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -36,8 +38,8 @@ public class Client extends JFrame implements ActionListener {
 	private JButton createroom_btn = new JButton("방만들기");
 	private JButton send_btn = new JButton("전송버튼");
 	
-	private JList user_list = new JList(); // 접속자 리스트
-	private JList room_list = new JList();	//전체 방목록 리스트
+	private JList User_list = new JList(); // 접속자 리스트
+	private JList Room_list = new JList();	//전체 방목록 리스트
 	private JTextArea chat_area = new JTextArea(); //채팅창 변수
 	
 	//Network 자원
@@ -50,7 +52,10 @@ public class Client extends JFrame implements ActionListener {
 	private DataInputStream dis;
 	private DataOutputStream dos;
 	
-	
+	//그외 변수들
+	Vector user_list = new Vector();
+	Vector room_list= new Vector();
+	StringTokenizer st;
 	
 	
 	Client(){	//생성자 
@@ -82,12 +87,12 @@ public class Client extends JFrame implements ActionListener {
 		contentPane.add(lblNewLabel);
 		
 		
-		user_list.setBounds(48, 40, 1, 1);
-		contentPane.add(user_list);
+		User_list.setBounds(12, 46, 109, 77);
+		contentPane.add(User_list);
 		
 		
-		room_list.setBounds(12, 46, 109, 77);
-		contentPane.add(room_list);
+		Room_list.setBounds(12, 46, 109, 77);
+		contentPane.add(Room_list);
 		
 		
 		notesend_btn.addActionListener(new ActionListener() {
@@ -96,6 +101,7 @@ public class Client extends JFrame implements ActionListener {
 		});
 		notesend_btn.setBounds(12, 133, 109, 23);
 		contentPane.add(notesend_btn);
+		
 		
 		JLabel lblNewLabel_1 = new JLabel("채 팅 방 목 록");
 		lblNewLabel_1.setBounds(12, 166, 87, 15);
@@ -200,25 +206,48 @@ public class Client extends JFrame implements ActionListener {
 		//처음 접속시에 ID 전송
 		send_message(id);
 		
+		//User_list에 사용자 추가
+		user_list.add(id);
+		User_list.setListData(user_list);
+		
 		Thread th = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				
-				while(true){
+
+				while (true) {
 					try {
-						String msg = dis.readUTF();	//메세지 수신
-						System.out.println("서버로부터 수신된 메세지"+msg);
-					} catch (IOException e) {
+						String msg = dis.readUTF(); // 메세지 수신
+						System.out.println("서버로부터 수신된 메세지" + msg);
 						
+						inmessage(msg);
+						
+					} catch (IOException e) {
+
 					}
-					
+
 				}
-				
+
 			}
 		});
+		th.start();
+	}
+	
+	private void inmessage(String str){ //서버로부터 들어오는 모든 메세지
+		st = new StringTokenizer(str,"/");
 		
+		String protocol = st.nextToken();
+		String message = st.nextToken();
+		System.out.println("프로토콜" + protocol);
+		System.out.println("내용" + message);
+		
+		if(protocol.equals("NewUser")){ //새로운 접속자
+			user_list.add(message);
+			User_list.setListData(user_list);
+		}
+			
 		
 	}
+	
 	
 	private void send_message(String str){ //서버에게 메세지를 보내는 부분
 		try {

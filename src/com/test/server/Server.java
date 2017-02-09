@@ -32,9 +32,7 @@ public class Server extends JFrame implements ActionListener { //JFrame과 액션리
 	private ServerSocket serverSocket;
 	private Socket socket;
 	private int port;
-	private Vector userVc = new Vector();
-	
-	
+	private Vector user_vc = new Vector();
 	
 	Server(){ //생성자
 		
@@ -146,7 +144,7 @@ public class Server extends JFrame implements ActionListener { //JFrame과 액션리
 		private DataInputStream dis;
 
 		private Socket user_socket;
-		private String nickNmae;
+		private String nickName;
 
 		UserInfo(Socket socket) { // 생성자 메서드
 			this.user_socket = socket;
@@ -160,8 +158,21 @@ public class Server extends JFrame implements ActionListener { //JFrame과 액션리
 				dis = new DataInputStream(is);
 				os = user_socket.getOutputStream();
 				dos = new DataOutputStream(os);
-				nickNmae = dis.readUTF(); //사용자의 닉네임을 받는다.
-				textArea.append(nickNmae+":사용자 접속!\n");
+				nickName = dis.readUTF(); //사용자의 닉네임을 받는다.
+				textArea.append(nickName+":사용자 접속!\n");
+				
+				//기존 사용자들에게 새로운 알림
+				System.out.println("현재 접속된 사용자 수"+user_vc.size());
+				for(int i=0; i<user_vc.size(); i++ ) {   //현재 접속된 사용자들에게 새로운 사용자알림
+					UserInfo u = (UserInfo)user_vc.elementAt(i);
+					u.send_Message("NewUser/"+nickName);
+				}
+				
+				//자신에게 기존 사용자를 알림
+				
+				
+				user_vc.add(this);//사용자에게 알린후 Vector에 자신을 추가
+				
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -169,15 +180,23 @@ public class Server extends JFrame implements ActionListener { //JFrame과 액션리
 		}
 
 		public void run() { // thread에서 처리할 내용
-			while(true) {
+			while (true) {
 				try {
 					String msg = dis.readUTF();
-					textArea.append(nickNmae+" :사용자로부터 들어온 메세지 :"+msg+"\n");
+					textArea.append(nickName + " : 사용자로부터 들어온 메세지 :" + msg + "\n");// 메세지수신
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
 
+		}//run 메서드 끝
+		
+		private void send_Message(String str){ //문자열을 받아서 전송
+			try {
+				dos.writeUTF(str);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 
 	}
