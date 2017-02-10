@@ -243,6 +243,9 @@ public class Client extends JFrame implements ActionListener {
 		if(protocol.equals("NewUser")){ //货肺款 立加磊
 			user_list.add(message);
 			User_list.setListData(user_list);
+		}else if(protocol.equals("OldUser")){
+			user_list.add(message);
+			User_list.setListData(user_list);
 		}
 			
 		

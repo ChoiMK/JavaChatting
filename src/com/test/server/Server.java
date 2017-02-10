@@ -163,12 +163,15 @@ public class Server extends JFrame implements ActionListener { //JFrame과 액션리
 				
 				//기존 사용자들에게 새로운 알림
 				System.out.println("현재 접속된 사용자 수"+user_vc.size());
-				for(int i=0; i<user_vc.size(); i++ ) {   //현재 접속된 사용자들에게 새로운 사용자알림
-					UserInfo u = (UserInfo)user_vc.elementAt(i);
-					u.send_Message("NewUser/"+nickName);
-				}
 				
-				//자신에게 기존 사용자를 알림
+				broadCast("NewUser/"+nickName); // 기존사용자에게 자신을 알린다
+				
+				//자신에게 기존 사용자를 받아오는 부분
+				for(int i=0; i<user_vc.size(); i++){
+					UserInfo u = (UserInfo)user_vc.elementAt(i);
+					send_Message("OldUser/"+u.nickName);
+					
+				}
 				
 				
 				user_vc.add(this);//사용자에게 알린후 Vector에 자신을 추가
@@ -190,6 +193,14 @@ public class Server extends JFrame implements ActionListener { //JFrame과 액션리
 			}
 
 		}//run 메서드 끝
+		
+		private void broadCast(String str){ //전체 사용자에게 메세지를 보내는부분
+			for(int i=0; i<user_vc.size(); i++ ) {  
+				UserInfo u = (UserInfo)user_vc.elementAt(i);
+				u.send_Message(str);
+			}
+		}
+		
 		
 		private void send_Message(String str){ //문자열을 받아서 전송
 			try {
