@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import javax.swing.JButton;
@@ -33,6 +34,7 @@ public class Server extends JFrame implements ActionListener { //JFrame과 액션리
 	private Socket socket;
 	private int port;
 	private Vector user_vc = new Vector();
+	private StringTokenizer st;
 	
 	Server(){ //생성자
 		
@@ -170,11 +172,12 @@ public class Server extends JFrame implements ActionListener { //JFrame과 액션리
 				for(int i=0; i<user_vc.size(); i++){
 					UserInfo u = (UserInfo)user_vc.elementAt(i);
 					send_Message("OldUser/"+u.nickName);
-					
 				}
-				
-				
+					
 				user_vc.add(this);//사용자에게 알린후 Vector에 자신을 추가
+				
+				broadCast("user_list_update/ ");
+				
 				
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -187,6 +190,7 @@ public class Server extends JFrame implements ActionListener { //JFrame과 액션리
 				try {
 					String msg = dis.readUTF();
 					textArea.append(nickName + " : 사용자로부터 들어온 메세지 :" + msg + "\n");// 메세지수신
+					inMessage(msg);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -194,6 +198,38 @@ public class Server extends JFrame implements ActionListener { //JFrame과 액션리
 
 		}//run 메서드 끝
 		
+		private void inMessage(String str){ //클라이언트로부터 들어오는 메세지 처리
+			st = new StringTokenizer(str,"/");
+			String protocol = st.nextToken();
+			String message = st.nextToken();
+			
+			System.out.println("프로토콜 : " +protocol);
+			System.out.println("메세지 : " +message);
+			
+			if(protocol.equals("Note")){
+				
+				//protocol = Note
+				//message = user
+				//note = 받는내용
+				
+				
+				String note = st.nextToken();
+				System.out.println("받는사람 : "+message);
+				System.out.println("보낼내용 : "+note);
+				
+				//벡터에서 해당 사용자를 찾아서 메세지 전송
+				for(int i=0; i<user_vc.size(); i++){
+					UserInfo u = (UserInfo)user_vc.elementAt(i);
+					
+					if(u.nickName.equals(message)){
+						u.send_Message("Note/"+nickName+"/"+note);
+						// Note/User1/~~~~~
+					}
+					
+				}
+				
+			}
+		}
 		private void broadCast(String str){ //전체 사용자에게 메세지를 보내는부분
 			for(int i=0; i<user_vc.size(); i++ ) {  
 				UserInfo u = (UserInfo)user_vc.elementAt(i);

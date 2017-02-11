@@ -1,4 +1,5 @@
 package com.test.client;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.DataInputStream;
@@ -15,6 +16,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -89,10 +91,7 @@ public class Client extends JFrame implements ActionListener {
 		
 		User_list.setBounds(12, 46, 109, 77);
 		contentPane.add(User_list);
-		
-		
-		Room_list.setBounds(12, 46, 109, 77);
-		contentPane.add(Room_list);
+		User_list.setListData(user_list);
 		
 		
 		notesend_btn.addActionListener(new ActionListener() {
@@ -111,10 +110,10 @@ public class Client extends JFrame implements ActionListener {
 		chat_area.setBounds(134, 43, 427, 301);
 		contentPane.add(chat_area);
 		
-		JList list_2 = new JList();
-		list_2.setBounds(12, 191, 109, 120);
-		contentPane.add(list_2);
-		
+		Room_list.setBounds(12, 191, 109, 120);
+		contentPane.add(Room_list);
+		Room_list.setListData(room_list);
+
 		
 		joinroom_btn.setBounds(10, 321, 111, 23);
 		contentPane.add(joinroom_btn);
@@ -208,7 +207,6 @@ public class Client extends JFrame implements ActionListener {
 		
 		//User_list에 사용자 추가
 		user_list.add(id);
-		User_list.setListData(user_list);
 		
 		Thread th = new Thread(new Runnable() {
 			@Override
@@ -237,16 +235,27 @@ public class Client extends JFrame implements ActionListener {
 		
 		String protocol = st.nextToken();
 		String message = st.nextToken();
+		
 		System.out.println("프로토콜" + protocol);
 		System.out.println("내용" + message);
 		
 		if(protocol.equals("NewUser")){ //새로운 접속자
 			user_list.add(message);
-			User_list.setListData(user_list);
+			
 		}else if(protocol.equals("OldUser")){
 			user_list.add(message);
+			
+		}else if(protocol.equals("Note")){
+			
+			String note = st.nextToken();
+			
+			System.out.println(message+"사용자로부터 온 쪽지"+note);
+			
+			JOptionPane.showMessageDialog(null, note, message+"님으로 부터 쪽지", JOptionPane.CLOSED_OPTION);
+		}else if(protocol.equals("user_list_update")){
 			User_list.setListData(user_list);
 		}
+			
 			
 		
 	}
@@ -275,6 +284,15 @@ public class Client extends JFrame implements ActionListener {
 			netWork();
 		}else if(e.getSource() == notesend_btn){
 			System.out.println("쪽지 보내기 버튼 클릭");
+			String user = (String) User_list.getSelectedValue();
+			
+			String note = JOptionPane.showInputDialog("보낼메세지");
+			if(note!=null){
+				send_message("Note/"+user+"/"+note);
+				//ex = Note/User2/나는 User1이야
+			}
+			System.out.println("받는사람 : "+user+"|보낼내용 : " +note);
+			
 		}else if(e.getSource()==joinroom_btn){
 			System.out.println("방 참여 버튼 클릭");
 		}else if(e.getSource()==createroom_btn){
