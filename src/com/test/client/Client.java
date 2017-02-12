@@ -58,6 +58,7 @@ public class Client extends JFrame implements ActionListener {
 	Vector user_list = new Vector();
 	Vector room_list= new Vector();
 	StringTokenizer st;
+	private String my_room; //내가 있는 방 이름
 	
 	
 	Client(){	//생성자 
@@ -255,6 +256,25 @@ public class Client extends JFrame implements ActionListener {
 		}else if(protocol.equals("user_list_update")){
 			User_list.setListData(user_list);
 		}
+		else if(protocol.equals("CreateRoom")){ // 방을 만들었을때
+			my_room = message;
+		}else if(protocol.equals("CreateRoomFail")){ //방만들기 실패했을 경우
+			JOptionPane.showMessageDialog(null,"방만들기 실패","알림",JOptionPane.ERROR_MESSAGE);
+		}else if(protocol.equals("New_Room")){ //새로운 방을 만들었을때
+			room_list.add(message);
+			Room_list.setListData(room_list);
+		}else if(protocol.equals("Chatting")){
+			String msg = st.nextToken();
+			chat_area.append(message+" : "+msg+"\n");
+		}else if(protocol.equals("OldRoom")){
+			room_list.add(message);
+		}else if(protocol.equals("room_list_update")){
+			Room_list.setListData(room_list);
+			
+		}else if(protocol.equals("JoinRoom")){
+			my_room = message;
+			JOptionPane.showMessageDialog(null,"채팅방에 입장했습니다.","알림",JOptionPane.INFORMATION_MESSAGE);
+		}
 			
 			
 		
@@ -294,13 +314,22 @@ public class Client extends JFrame implements ActionListener {
 			System.out.println("받는사람 : "+user+"|보낼내용 : " +note);
 			
 		}else if(e.getSource()==joinroom_btn){
+			
+			String joinRoom =(String)Room_list.getSelectedValue();
+			
+			send_message("JoinRoom/"+joinRoom);
+			
 			System.out.println("방 참여 버튼 클릭");
 		}else if(e.getSource()==createroom_btn){
+			String roomname = JOptionPane.showInputDialog("방이름");
+			if(roomname!=null){
+				send_message("CreateRoom/"+roomname);
+			}
 			System.out.println("방 만들기 버튼 클릭");
 		}else if(e.getSource()==send_btn){
 			
-			send_message("임시메시지입니다.");
-			
+			send_message("Chatting/"+my_room+"/"+mseeage_tf.getText().trim());
+			// Chatting + 방이름 + 내용
 			System.out.println("채팅 전송 버튼 클릭");
 		}
 		
